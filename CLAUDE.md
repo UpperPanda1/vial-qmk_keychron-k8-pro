@@ -114,11 +114,11 @@ tymon has `-DAPDAPTIVE_NKRO_ENABLE`: keys fill the 6KRO report, and only the 7th
 
 **Macros:** count = `DYNAMIC_KEYMAP_MACRO_COUNT` (default 16, `quantum/dynamic_keymap.h:30`, `#ifndef`-guarded; neither fork sets it).
 All macros share one buffer (tymon 1098 B, Vil4 676 B); count does not change the EEPROM layout. Hard limit 128
-(`QK_MACRO` 0x7700–0x777F). Defining it twice fails the build (`-Werror` "redefined"). `40` was tested: builds, firmware reports 40.
+(`QK_MACRO` 0x7700–0x777F). Defining it twice fails the build (`-Werror` "redefined"). `40` is set in patch 0002.
 
 ## Recommendation
 For ANSI RGB: use tymon plus `patches/tymon3310-vial-qmk/0001` (keycodes) and `0002` (10 ms debounce, brightness 32),
-applied in order with `git am`. Optionally re-enable the Vil4 effects you want.
+applied in order with `git am`. 0002 also sets `DYNAMIC_KEYMAP_MACRO_COUNT 40` (verified: firmware reports 40, buffer 1098 B). Optionally re-enable the Vil4 effects you want.
 Keymap overrides of values that arrive via `info_config.h` or `-D` need `#undef` first (`-Werror`).
 If you stay on the current base: fix finding 1, add an unlock combo, fix `factory_test.c:184`, and decide on Caps Word.
 Either way, after flashing a firmware with a different EEPROM layout, do an EEPROM reset.
