@@ -67,24 +67,51 @@ Evidence: build, `arm-none-eabi-nm` on the ELF, and source.
 | Base | vial-qmk 2022-08, Vial proto 5 | rebuilt on vial-qmk 2023-03, Vial proto 5 | current vial-qmk + Keychron `qmk_firmware` **2025q3**, Vial proto **6** |
 | Keychron stack | `bluetooth/` 2022 | `bluetooth/` 2023 (+rtc_timer, gpio_uart) | `common/` + `common/wireless/` (shared by 98 boards) |
 | Vial keymaps | ansi/rgb | ansi/rgb, ansi/white | **all 6**: ansi/iso/jis × rgb/white |
+| Vial-only features | TD/combos/KO/QMK settings | — | + Caps Word, Alt Repeat Key, Layer Lock, chordal hold |
+| Macro buffer | 676 B | — | 1098 B |
 | Hooks | `_user` hijacked | `_kb` chain | `_kb` chain (`keychron_task_kb`) |
 | EEPROM | L4 FEE + `+1` hack | wear_leveling 2 KB | wear_leveling 3 KB |
 | Security | insecure | unlock combo | unlock combo |
 | RGB effects enabled | 43 (Vil4) | 21 | 21 (Keychron default set) |
 | Extras | — | — | Keychron Launcher raw HID (coexists with Vial `0xFE`), snap click, dynamic debounce, report rate, language, adaptive NKRO |
-| Builds here | ansi/rgb:vial ✅ | not built | ansi/rgb, ansi/white, iso/rgb `:vial` ✅ |
+| Builds here | ansi/rgb:vial ✅ | not built | all 6 `:vial` ✅ (with patch) |
 
 - **Does the current fork just build on the others?** It builds on the *2022* Keychron code plus solid-pixel. It is *not* built on
   the 2023 official rework, and it is unrelated to tymon's lineage. Its only unique content is Vil4's EEPROM offset and the bigger RGB effect list.
-- **tymon bug (proven by audit script and Vial docs):** `k8_pro/*/keymaps/vial/vial.json` lists 13 `customKeycodes`, but the enum
-  has 15 (`MCtl`, `LPad` missing). From "Task" onward every Vial label is off by two (GUI "BTH1" = `KC_WIN_CORTANA`).
-  `SC_TOGG` (slot 15) is also unlisted. tymon's K8 Max JSON is correct (16/16).
+## tymon K8 Pro: second-pass audit (2026-10-24, user owns **ANSI RGB**)
+tymon's K8 Pro board files (`info.json`, `keyboard.json`, `config.h`, `rgb.c`, `k8_pro.c`, keymaps) are **identical to Keychron
+`qmk_firmware` 2025q3**; only the six `keymaps/vial/` folders are tymon's. tymon also edits `common/` (raw HID, weak `_kb` hooks,
+VialRGB Keychron effects, wireless XOR for LKBT51; the XOR path is not compiled for K8 Pro).
+
+**Vial features in `ansi/rgb:vial`** (ELF symbols plus compile-time probe): tap dance 16, combos 16, key overrides 16,
+Alt Repeat Key 16, macros 16 (1098-byte buffer), 4 layers, QMK Settings, Auto Shift, Caps Word, Layer Lock, VialRGB, NKRO,
+mouse keys. EEPROM map: core 0–36 · Keychron data 37–537 · VIA header 538–541 · keymaps from 542 (no overlap; Keychron's
+hardcoded base 37 equals `EECONFIG_BASE_SIZE`).
+
+| # | Finding (ANSI RGB unless noted) | Severity | Status |
+|---|---|---|---|
+| 1 | `vial.json` `customKeycodes` 13 vs enum 15 (`MCtl`/`LPad` missing). vial-gui maps `USERxx = QK_KB(0x7E00)+i` (`keycodes.py:833`), so labels from "Task" on are off by two. White variants: 13 vs 17 (`BL_SPI`/`BL_SPD`). All six variants affected | High | **Fixed:** `patches/tymon3310-vial-qmk/0001-*.patch`. Audit 15/15 and 17/17, all 6 `:vial` build with 0 warnings, decoded embedded definition checked |
+| 2 | Raw HID `0xAA` (CKBT51 DFU) and `0xAB` (factory test) reply twice: the handler sends, then `via.c:455` echoes. Upstream avoided this with `via_command_kb()`, which vial-qmk never calls | Low–Med | Open (code trace only). Fix idea: suppress the next `via_raw_hid_send` after a self-sending handler |
+| 3 | VialRGB Keychron effects: table hardcodes `{48,24},{49,25}`, but the enum gives `PER_KEY_RGB=45`, `MIXED_RGB=46` (compiler probe). vial-gui only knows IDs ≤ 44, so Per-Key/Mixed RGB can't be reached from Vial, and the HSV exemption at `vialrgb.c:175` never fires. QMK side 24/25 is correct for this board | Low | Open |
+| 4 | Debounce `"debounce": 50` = **50 ms, sym_eager_per_key** (Keychron default on most boards; release held ≤ 50 ms). Can only be changed through Keychron raw HID (`DEBOUNCE_SET`), not Vial | Behavior | Keychron's choice. Launcher compatibility with Vial firmware unverified |
+| 5 | `SC_TOGG` (tymon `#define … NEW_SAFE_RANGE`) has **no handler** anywhere: do not list it in `vial.json` | Trivial | Leave unlisted |
+| 6 | `"menus"`/`"keycodes"` in `vial.json` are ignored by vial-gui (it reads only `lighting`, `customKeycodes`, …) | Trivial | Harmless |
+| 7 | `-DVIA_INSECURE` from `keychron_common.mk` has no code consumer. Vial lock intact (`vial_unlocked` in .bss = 0) | None | OK |
+
+Verified OK: layouts match `info.json` for all six variants (87/88/91 keys, x/w), UIDs unique, unlock combos valid
+(ANSI Esc+Enter `[3,13]`; ISO/JIS `[2,13]`), `_user` hooks weak, Vial keymap = Keychron `keychron` keymap.
+
+**Vil4 features missing from tymon:** 22 RGB effects (ALPHAS_MODS, BAND_SAT/VAL, BAND_PINWHEEL_SAT/VAL, BAND_SPIRAL_SAT,
+GRADIENT_UP_DOWN/LEFT_RIGHT, HUE_BREATHING/PENDULUM/WAVE, MULTISPLASH, PIXEL_FLOW/FRACTAL, RAINBOW_PINWHEELS, RAINDROPS,
+SOLID_MULTISPLASH, SOLID_REACTIVE, SOLID_REACTIVE_CROSS/MULTICROSS/NEXUS/WIDE); `NK_TOGG` on Fn+N (assignable in Vial);
+5 ms debounce; no unlock needed (`VIAL_INSECURE`); LED turn-off threshold 32 (tymon 48, so brightness steps 33–48 go dark).
+The double-tap-Shift Caps Word define is dead in Vil4 anyway. Effects can be added back via `keyboard.json` `rgb_matrix.animations`.
 
 ## Recommendation
-Move to the tymon base for full features, and fix its K8 Pro `vial.json` first (add `MCtl`, `LPad` after `RCmd`;
-optionally Snap Click toggle). If you stay on the current base: fix finding 1, add an unlock combo, fix `factory_test.c:184`, and
-decide on Caps Word. Either way, after flashing a firmware with a different EEPROM layout, do an EEPROM reset.
-**Not yet tested on hardware:** Bluetooth, battery, tap dance persistence, the `+1` root cause.
+For ANSI RGB: use tymon plus the patch above. Optionally re-enable the Vil4 effects you want, and keep 50 ms debounce in mind.
+If you stay on the current base: fix finding 1, add an unlock combo, fix `factory_test.c:184`, and decide on Caps Word.
+Either way, after flashing a firmware with a different EEPROM layout, do an EEPROM reset.
+**Not yet tested on hardware:** Bluetooth, battery, tap dance persistence, the `+1` root cause, raw-HID double reply impact.
 
 ## Conventions
 - Smallest correct change and match the Keychron code style. Never commit `.build/`.

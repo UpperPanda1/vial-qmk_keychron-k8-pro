@@ -1,0 +1,205 @@
+From 503358938203427b7c000aef3ed39bd20927bf67 Mon Sep 17 00:00:00 2001
+From: UpperPanda1 <colabbhuiyan@gmail.com>
+Date: Sat, 24 Oct 2026 08:00:40 +0000
+Subject: [PATCH] keychron/k8_pro: add missing customKeycodes to vial.json
+
+The firmware enum in keychron_common.h reserves QK_KB_4/5 for
+KC_MAC_MISSION_CONTROL and KC_MAC_LAUCHPAD, but the K8 Pro vial.json
+files skipped them. Vial maps customKeycodes by position, so every
+label from "Task" onward pointed at the wrong keycode (e.g. "BTH1"
+assigned KC_WIN_CORTANA).
+
+Insert MCtl/LPad after RCmd in all six variants. White (LED matrix)
+variants also expose BL_SPI/BL_SPD, which keychron_common.c handles.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01PeCVxehrCwm2mWBN2JULnQ
+---
+ .../k8_pro/ansi/rgb/keymaps/vial/vial.json    | 10 ++++++++++
+ .../k8_pro/ansi/white/keymaps/vial/vial.json  | 20 +++++++++++++++++++
+ .../k8_pro/iso/rgb/keymaps/vial/vial.json     | 10 ++++++++++
+ .../k8_pro/iso/white/keymaps/vial/vial.json   | 20 +++++++++++++++++++
+ .../k8_pro/jis/rgb/keymaps/vial/vial.json     | 10 ++++++++++
+ .../k8_pro/jis/white/keymaps/vial/vial.json   | 20 +++++++++++++++++++
+ 6 files changed, 90 insertions(+)
+
+diff --git a/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/vial.json b/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/vial.json
+index 504863c1..7fab7134 100644
+--- a/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/vial.json
++++ b/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/vial.json
+@@ -178,6 +178,16 @@
+       "title": "Right Command",
+       "shortName": "RCmd"
+     },
++    {
++      "name": "Misson Control",
++      "title": "Misson Control in macOS",
++      "shortName": "MCtl"
++    },
++    {
++      "name": "Launch pad",
++      "title": "Launch pad in macOS",
++      "shortName": "LPad"
++    },
+     {
+       "name": "Task View",
+       "title": "Task View in Windows",
+diff --git a/keyboards/keychron/k8_pro/ansi/white/keymaps/vial/vial.json b/keyboards/keychron/k8_pro/ansi/white/keymaps/vial/vial.json
+index 97ecddeb..41e47a42 100644
+--- a/keyboards/keychron/k8_pro/ansi/white/keymaps/vial/vial.json
++++ b/keyboards/keychron/k8_pro/ansi/white/keymaps/vial/vial.json
+@@ -26,6 +26,16 @@
+       "title": "Right Command",
+       "shortName": "RCmd"
+     },
++    {
++      "name": "Misson Control",
++      "title": "Misson Control in macOS",
++      "shortName": "MCtl"
++    },
++    {
++      "name": "Launch pad",
++      "title": "Launch pad in macOS",
++      "shortName": "LPad"
++    },
+     {
+       "name": "Task View",
+       "title": "Task View in Windows",
+@@ -70,6 +80,16 @@
+       "name": "Battery Level",
+       "title": "Show battery level",
+       "shortName": "Batt"
++    },
++    {
++      "name": "Backlight Speed Up",
++      "title": "Increase backlight effect speed",
++      "shortName": "BLSpd+"
++    },
++    {
++      "name": "Backlight Speed Down",
++      "title": "Decrease backlight effect speed",
++      "shortName": "BLSpd-"
+     }
+   ],
+   "matrix": {
+diff --git a/keyboards/keychron/k8_pro/iso/rgb/keymaps/vial/vial.json b/keyboards/keychron/k8_pro/iso/rgb/keymaps/vial/vial.json
+index 95e8ef5c..6e0c3284 100644
+--- a/keyboards/keychron/k8_pro/iso/rgb/keymaps/vial/vial.json
++++ b/keyboards/keychron/k8_pro/iso/rgb/keymaps/vial/vial.json
+@@ -178,6 +178,16 @@
+       "title": "Right Command",
+       "shortName": "RCmd"
+     },
++    {
++      "name": "Misson Control",
++      "title": "Misson Control in macOS",
++      "shortName": "MCtl"
++    },
++    {
++      "name": "Launch pad",
++      "title": "Launch pad in macOS",
++      "shortName": "LPad"
++    },
+     {
+       "name": "Task View",
+       "title": "Task View in Windows",
+diff --git a/keyboards/keychron/k8_pro/iso/white/keymaps/vial/vial.json b/keyboards/keychron/k8_pro/iso/white/keymaps/vial/vial.json
+index 38ae60f6..fcc8a006 100644
+--- a/keyboards/keychron/k8_pro/iso/white/keymaps/vial/vial.json
++++ b/keyboards/keychron/k8_pro/iso/white/keymaps/vial/vial.json
+@@ -26,6 +26,16 @@
+       "title": "Right Command",
+       "shortName": "RCmd"
+     },
++    {
++      "name": "Misson Control",
++      "title": "Misson Control in macOS",
++      "shortName": "MCtl"
++    },
++    {
++      "name": "Launch pad",
++      "title": "Launch pad in macOS",
++      "shortName": "LPad"
++    },
+     {
+       "name": "Task View",
+       "title": "Task View in Windows",
+@@ -70,6 +80,16 @@
+       "name": "Battery Level",
+       "title": "Show battery level",
+       "shortName": "Batt"
++    },
++    {
++      "name": "Backlight Speed Up",
++      "title": "Increase backlight effect speed",
++      "shortName": "BLSpd+"
++    },
++    {
++      "name": "Backlight Speed Down",
++      "title": "Decrease backlight effect speed",
++      "shortName": "BLSpd-"
+     }
+   ],
+   "matrix": {
+diff --git a/keyboards/keychron/k8_pro/jis/rgb/keymaps/vial/vial.json b/keyboards/keychron/k8_pro/jis/rgb/keymaps/vial/vial.json
+index f93b9533..a714fdf3 100644
+--- a/keyboards/keychron/k8_pro/jis/rgb/keymaps/vial/vial.json
++++ b/keyboards/keychron/k8_pro/jis/rgb/keymaps/vial/vial.json
+@@ -178,6 +178,16 @@
+       "title": "Right Command",
+       "shortName": "RCmd"
+     },
++    {
++      "name": "Misson Control",
++      "title": "Misson Control in macOS",
++      "shortName": "MCtl"
++    },
++    {
++      "name": "Launch pad",
++      "title": "Launch pad in macOS",
++      "shortName": "LPad"
++    },
+     {
+       "name": "Task View",
+       "title": "Task View in Windows",
+diff --git a/keyboards/keychron/k8_pro/jis/white/keymaps/vial/vial.json b/keyboards/keychron/k8_pro/jis/white/keymaps/vial/vial.json
+index 825cafe1..44abf128 100644
+--- a/keyboards/keychron/k8_pro/jis/white/keymaps/vial/vial.json
++++ b/keyboards/keychron/k8_pro/jis/white/keymaps/vial/vial.json
+@@ -26,6 +26,16 @@
+       "title": "Right Command",
+       "shortName": "RCmd"
+     },
++    {
++      "name": "Misson Control",
++      "title": "Misson Control in macOS",
++      "shortName": "MCtl"
++    },
++    {
++      "name": "Launch pad",
++      "title": "Launch pad in macOS",
++      "shortName": "LPad"
++    },
+     {
+       "name": "Task View",
+       "title": "Task View in Windows",
+@@ -70,6 +80,16 @@
+       "name": "Battery Level",
+       "title": "Show battery level",
+       "shortName": "Batt"
++    },
++    {
++      "name": "Backlight Speed Up",
++      "title": "Increase backlight effect speed",
++      "shortName": "BLSpd+"
++    },
++    {
++      "name": "Backlight Speed Down",
++      "title": "Decrease backlight effect speed",
++      "shortName": "BLSpd-"
+     }
+   ],
+   "matrix": {
+-- 
+2.43.0
+

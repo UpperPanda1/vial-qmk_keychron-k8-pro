@@ -41,7 +41,14 @@ arm-none-eabi-nm .build/<target>.elf | grep -E ' T (process_record|keyboard_post
 # Is a feature really compiled in?
 arm-none-eabi-nm .build/<target>.elf | grep -c -i caps_word
 ```
-`#define` aliases such as `SC_TOGG NEW_SAFE_RANGE` occupy an enum slot without being listed in the enum, so count them by hand.
+A `#define` alias placed after the enum (e.g. `SC_TOGG NEW_SAFE_RANGE`) belongs in `vial.json` only if some `case` handles it. Grep for the handler first.
+
+**Reading compiled constants** (enum values, `sizeof`-based EEPROM addresses that `#pragma message` can't print): in a throwaway
+keymap copy, append `_Static_assert((EXPR) != N, "EXPR_IS_N");` for a range of N, build, and grep the one failing message.
+Use one quantity per build, since too many failures hit GCC's error limit. Delete the keymap afterwards.
+**What Vial actually receives:** LZMA-decode the bytes in `.build/obj_*/src/vial_generated_keyboard_definition.h` and read `customKeycodes`.
+**Two raw-HID dispatch models:** QMK's `via_command_kb()` returns true to suppress VIA's reply. vial-qmk only has
+`raw_hid_receive_kb()` and always echoes the buffer (`via.c` end), so Keychron handlers that send their own reply answer twice.
 
 ## Build
 Build from the repo root with `make <kb>:vial`, not `qmk compile`. `:via` keymaps cannot build in vial-qmk (`#error` in `quantum/via.c`). Environment setup is in the repo `CLAUDE.md`.
