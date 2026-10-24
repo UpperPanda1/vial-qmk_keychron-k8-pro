@@ -179,6 +179,16 @@
       "shortName": "RCmd"
     },
     {
+      "name": "Misson Control",
+      "title": "Misson Control in macOS",
+      "shortName": "MCtl"
+    },
+    {
+      "name": "Launch pad",
+      "title": "Launch pad in macOS",
+      "shortName": "LPad"
+    },
+    {
       "name": "Task View",
       "title": "Task View in Windows",
       "shortName": "Task"

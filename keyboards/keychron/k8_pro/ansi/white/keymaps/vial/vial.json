@@ -27,6 +27,16 @@
       "shortName": "RCmd"
     },
     {
+      "name": "Misson Control",
+      "title": "Misson Control in macOS",
+      "shortName": "MCtl"
+    },
+    {
+      "name": "Launch pad",
+      "title": "Launch pad in macOS",
+      "shortName": "LPad"
+    },
+    {
       "name": "Task View",
       "title": "Task View in Windows",
       "shortName": "Task"
@@ -70,6 +80,16 @@
       "name": "Battery Level",
       "title": "Show battery level",
       "shortName": "Batt"
+    },
+    {
+      "name": "Backlight Speed Up",
+      "title": "Increase backlight effect speed",
+      "shortName": "BLSpd+"
+    },
+    {
+      "name": "Backlight Speed Down",
+      "title": "Decrease backlight effect speed",
+      "shortName": "BLSpd-"
     }
   ],
   "matrix": {
