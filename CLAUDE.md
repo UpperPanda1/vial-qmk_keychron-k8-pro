@@ -119,6 +119,9 @@ All macros share one buffer (tymon 1098 B, Vil4 676 B); count does not change th
 ## Recommendation
 For ANSI RGB: use tymon plus `patches/tymon3310-vial-qmk/0001` (keycodes) and `0002` (10 ms debounce, brightness 32),
 applied in order with `git am`. 0002 also sets `DYNAMIC_KEYMAP_MACRO_COUNT 40` (verified: firmware reports 40, buffer 1098 B). Optionally re-enable the Vil4 effects you want.
+**Branches in this repo** (GitHub allows one fork per network, so tymon's code lives here as separate branches, based on tymon `99d313c0`):
+`k8-pro-ansi-rgb` = 0001 + 0002 (build and flash from here); `fix/k8-pro-vial-custom-keycodes` = 0001 only (upstream PR to tymon `vial-updated-keychron`).
+Build from a checkout of `k8-pro-ansi-rgb`: `make keychron/k8_pro/ansi/rgb:vial`. It needs that branch's own submodules (newer ChibiOS than `bluetooth_playground`).
 Keymap overrides of values that arrive via `info_config.h` or `-D` need `#undef` first (`-Werror`).
 If you stay on the current base: fix finding 1, add an unlock combo, fix `factory_test.c:184`, and decide on Caps Word.
 Either way, after flashing a firmware with a different EEPROM layout, do an EEPROM reset.
