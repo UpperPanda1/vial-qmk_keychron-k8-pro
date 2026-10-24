@@ -122,6 +122,10 @@ applied in order with `git am`. 0002 also sets `DYNAMIC_KEYMAP_MACRO_COUNT 40` (
 **Branches in this repo** (GitHub allows one fork per network, so tymon's code lives here as separate branches, based on tymon `99d313c0`):
 `k8-pro-ansi-rgb` = 0001 + 0002 (build and flash from here); `fix/k8-pro-vial-custom-keycodes` = 0001 only (upstream PR to tymon `vial-updated-keychron`).
 Build from a checkout of `k8-pro-ansi-rgb`: `make keychron/k8_pro/ansi/rgb:vial`. It needs that branch's own submodules (newer ChibiOS than `bluetooth_playground`).
+Re-verified 2026-10-24 from the pushed branch (`71000a90`): clean build of all 6 `:vial` targets, 0 warnings. vial-gui's own keycode code,
+run on the definition embedded in the firmware, maps all 15 labels to the right firmware keycodes (static-assert proven `0x7E00+i`).
+Tymon's `util/ci_vial_verify_uid.py` passes. Pre-existing on unpatched tymon (not ours): `ansi/rgb:default` fails (`ckbt51.c:133`
+excess initializer without RAW), and `ansi/rgb:keychron` is a VIA keymap that vial-qmk can't build.
 Keymap overrides of values that arrive via `info_config.h` or `-D` need `#undef` first (`-Werror`).
 If you stay on the current base: fix finding 1, add an unlock combo, fix `factory_test.c:184`, and decide on Caps Word.
 Either way, after flashing a firmware with a different EEPROM layout, do an EEPROM reset.
