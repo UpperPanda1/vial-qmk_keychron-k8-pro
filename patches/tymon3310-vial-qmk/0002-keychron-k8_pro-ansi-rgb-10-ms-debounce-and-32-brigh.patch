@@ -1,0 +1,40 @@
+From ae496cba9240ce79a6f4a0c34d5454322b4d1d27 Mon Sep 17 00:00:00 2001
+From: UpperPanda1 <colabbhuiyan@gmail.com>
+Date: Sat, 24 Oct 2026 08:30:29 +0000
+Subject: [PATCH] keychron/k8_pro/ansi/rgb: 10 ms debounce and 32 brightness
+ turn-off in vial keymap
+
+Lower the eager per-key debounce from Keychron's 50 ms to 10 ms, and
+lower RGB_MATRIX_BRIGHTNESS_TURN_OFF_VAL from 48 to 32 so the lowest
+visible brightness step is 48 instead of 64.
+
+Both values arrive before the keymap config (info_config.h and a -D in
+keychron_common.mk), so they are #undef'd first to stay -Werror clean.
+The debounce default is stored in EEPROM and applies after an EEPROM
+reset (Fn+J+Z for 3 s).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01PeCVxehrCwm2mWBN2JULnQ
+---
+ keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/config.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/config.h b/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/config.h
+index 8bb2a3f7..f9a88755 100644
+--- a/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/config.h
++++ b/keyboards/keychron/k8_pro/ansi/rgb/keymaps/vial/config.h
+@@ -4,3 +4,11 @@
+ #define VIAL_UNLOCK_COMBO_ROWS { 0, 3 }
+ #define VIAL_UNLOCK_COMBO_COLS { 0, 13 }
+ 
++/* 10 ms eager per-key debounce (Keychron default is 50 ms from info.json).
++ * Stored in EEPROM: takes effect after an EEPROM reset (Fn+J+Z for 3 s). */
++#undef DEBOUNCE
++#define DEBOUNCE 10
++
++/* Keep the lower brightness steps lit (keychron_common.mk passes 48 via -D) */
++#undef RGB_MATRIX_BRIGHTNESS_TURN_OFF_VAL
++#define RGB_MATRIX_BRIGHTNESS_TURN_OFF_VAL 32
+-- 
+2.43.0
+

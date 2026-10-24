@@ -93,7 +93,8 @@ hardcoded base 37 equals `EECONFIG_BASE_SIZE`).
 | 1 | `vial.json` `customKeycodes` 13 vs enum 15 (`MCtl`/`LPad` missing). vial-gui maps `USERxx = QK_KB(0x7E00)+i` (`keycodes.py:833`), so labels from "Task" on are off by two. White variants: 13 vs 17 (`BL_SPI`/`BL_SPD`). All six variants affected | High | **Fixed:** `patches/tymon3310-vial-qmk/0001-*.patch`. Audit 15/15 and 17/17, all 6 `:vial` build with 0 warnings, decoded embedded definition checked |
 | 2 | Raw HID `0xAA` (CKBT51 DFU) and `0xAB` (factory test) reply twice: the handler sends, then `via.c:455` echoes. Upstream avoided this with `via_command_kb()`, which vial-qmk never calls | Low–Med | Open (code trace only). Fix idea: suppress the next `via_raw_hid_send` after a self-sending handler |
 | 3 | VialRGB Keychron effects: table hardcodes `{48,24},{49,25}`, but the enum gives `PER_KEY_RGB=45`, `MIXED_RGB=46` (compiler probe). vial-gui only knows IDs ≤ 44, so Per-Key/Mixed RGB can't be reached from Vial, and the HSV exemption at `vialrgb.c:175` never fires. QMK side 24/25 is correct for this board | Low | Open |
-| 4 | Debounce `"debounce": 50` = **50 ms, sym_eager_per_key** (Keychron default on most boards; release held ≤ 50 ms). Can only be changed through Keychron raw HID (`DEBOUNCE_SET`), not Vial | Behavior | Keychron's choice. Launcher compatibility with Vial firmware unverified |
+| 4 | Debounce `"debounce": 50` = **50 ms, sym_eager_per_key** (Keychron default on most boards; release held ≤ 50 ms). Can only be changed through Keychron raw HID (`DEBOUNCE_SET`), not Vial | Behavior | **Set to 10 ms** in ANSI RGB vial `config.h` (patch 0002, `#undef` first because `info_config.h` is included earlier). Stored in EEPROM, so it applies after Fn+J+Z. Disassembly: `debounce_set(4, 10, …)` |
+| 8 | `RGB_MATRIX_BRIGHTNESS_TURN_OFF_VAL=48` (`-D` in `keychron_common.mk`; `VAL_STEP` 16) turns brightness ≤ 48 off | Behavior | **Set to 32** (= Vil4) in patch 0002, so the lowest lit step is 48. Disassembly: `cmp r3, #32` |
 | 5 | `SC_TOGG` (tymon `#define … NEW_SAFE_RANGE`) has **no handler** anywhere: do not list it in `vial.json` | Trivial | Leave unlisted |
 | 6 | `"menus"`/`"keycodes"` in `vial.json` are ignored by vial-gui (it reads only `lighting`, `customKeycodes`, …) | Trivial | Harmless |
 | 7 | `-DVIA_INSECURE` from `keychron_common.mk` has no code consumer. Vial lock intact (`vial_unlocked` in .bss = 0) | None | OK |
@@ -103,12 +104,22 @@ Verified OK: layouts match `info.json` for all six variants (87/88/91 keys, x/w)
 
 **Vil4 features missing from tymon:** 22 RGB effects (ALPHAS_MODS, BAND_SAT/VAL, BAND_PINWHEEL_SAT/VAL, BAND_SPIRAL_SAT,
 GRADIENT_UP_DOWN/LEFT_RIGHT, HUE_BREATHING/PENDULUM/WAVE, MULTISPLASH, PIXEL_FLOW/FRACTAL, RAINBOW_PINWHEELS, RAINDROPS,
-SOLID_MULTISPLASH, SOLID_REACTIVE, SOLID_REACTIVE_CROSS/MULTICROSS/NEXUS/WIDE); `NK_TOGG` on Fn+N (assignable in Vial);
-5 ms debounce; no unlock needed (`VIAL_INSECURE`); LED turn-off threshold 32 (tymon 48, so brightness steps 33–48 go dark).
+SOLID_MULTISPLASH, SOLID_REACTIVE, SOLID_REACTIVE_CROSS/MULTICROSS/NEXUS/WIDE); `NK_TOGG` on Fn+N;
+5 ms debounce; no unlock needed (`VIAL_INSECURE`); LED turn-off threshold 32 (patch 0002 restores 32).
 The double-tap-Shift Caps Word define is dead in Vil4 anyway. Effects can be added back via `keyboard.json` `rgb_matrix.animations`.
 
+**NKRO:** Vil4 has standard QMK NKRO with no `FORCE_NKRO`, so it starts in 6KRO and `NK_TOGG` (Fn+N) switches modes.
+tymon has `-DAPDAPTIVE_NKRO_ENABLE`: keys fill the 6KRO report, and only the 7th+ key goes to the NKRO report
+(`report.c:192`). `keymap_config.nkro` is ignored on USB (`action_util.c:318`), so `NK_TOGG` is effectively a no-op. Don't add it.
+
+**Macros:** count = `DYNAMIC_KEYMAP_MACRO_COUNT` (default 16, `quantum/dynamic_keymap.h:30`, `#ifndef`-guarded; neither fork sets it).
+All macros share one buffer (tymon 1098 B, Vil4 676 B); count does not change the EEPROM layout. Hard limit 128
+(`QK_MACRO` 0x7700–0x777F). Defining it twice fails the build (`-Werror` "redefined"). `40` was tested: builds, firmware reports 40.
+
 ## Recommendation
-For ANSI RGB: use tymon plus the patch above. Optionally re-enable the Vil4 effects you want, and keep 50 ms debounce in mind.
+For ANSI RGB: use tymon plus `patches/tymon3310-vial-qmk/0001` (keycodes) and `0002` (10 ms debounce, brightness 32),
+applied in order with `git am`. Optionally re-enable the Vil4 effects you want.
+Keymap overrides of values that arrive via `info_config.h` or `-D` need `#undef` first (`-Werror`).
 If you stay on the current base: fix finding 1, add an unlock combo, fix `factory_test.c:184`, and decide on Caps Word.
 Either way, after flashing a firmware with a different EEPROM layout, do an EEPROM reset.
 **Not yet tested on hardware:** Bluetooth, battery, tap dance persistence, the `+1` root cause, raw-HID double reply impact.
